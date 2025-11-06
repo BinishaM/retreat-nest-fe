@@ -19,14 +19,14 @@ const HotelList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState(null)
 
-
+console.log(hotels)
   // ✅ Fetch hotels on mount
   useEffect(() => {
     const fetchHotels = async () => {
       try {
         setLoading(true)
         const data = await getHotels()
-        setHotels(data)
+        // setHotels(data)
       } catch (err) {
         console.error('Error fetching hotels:', err)
         setError('Failed to fetch hotel data.')
@@ -45,7 +45,7 @@ const HotelList = () => {
   const handleConfirmDelete = async () => {
     try {
       await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/retreats/${selectedHotel.id}/`)
-      setHotels(hotels.filter((h) => h.id !== selectedHotel.id))
+      // setHotels(hotels.filter((h) => h.id !== selectedHotel.id))
       console.log('✅ Hotel deleted successfully')
     } catch (err) {
       console.error('❌ Failed to delete hotel:', err)
