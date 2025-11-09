@@ -1,26 +1,21 @@
-import React, { useState } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { createHotel, updateHotel } from '../../api/hotel'
-
-const categoryOptions = [
-  { value: '1', label: 'Luxury' },
-  { value: '2', label: 'Budget' },
-  { value: '3', label: 'Beach' },
-  { value: '4', label: 'Mountain' },
-  { value: '5', label: 'City' },
-  { value: '6', label: 'Resort' },
-]
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { createHotel, updateHotel } from '../../api/hotel';
+import { getCategories } from '../../api/category'; // <-- API call
+import { toast } from 'react-toastify';
 
 const HotelForm = () => {
-  const location = useLocation()
-  const hotel = location.state?.hotel
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const location = useLocation();
+  const hotel = location.state?.hotel;
+  const categoryOptions = location.state?.categories;
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    ...hotel,
     name: hotel?.name || '',
     description: hotel?.description || '',
-    category: hotel?.category || '',
+    category: hotel?.category_id || '',
     slug: hotel?.slug || '',
     social_links: hotel?.social_links || {
       facebook: '',
@@ -28,68 +23,90 @@ const HotelForm = () => {
       twitter: '',
       website: '',
     },
-  })
+  });
 
-  const [errors, setErrors] = useState({})
-  const isEdit = Boolean(id)
+  const [categories, setCategories] = useState([]); // fetched categories
+  const [errors, setErrors] = useState({});
+  const isEdit = Boolean(id);
+
+  // ✅ Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        // Map API data to { value, label } format for select
+        const options = res.data.map((cat) => ({
+          value: cat.id,
+          label: cat.name,
+        }));
+        setCategories(options);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+        toast.error('Could not load categories');
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     if (name.startsWith('social_links.')) {
-      const key = name.split('.')[1]
+      const key = name.split('.')[1];
       setFormData({
         ...formData,
         social_links: {
           ...formData.social_links,
           [key]: value,
         },
-      })
+      });
     } else {
-      setFormData({ ...formData, [name]: value })
+      setFormData({ ...formData, [name]: value });
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
-
-    if (!formData.name.trim()) newErrors.name = 'Hotel name is required'
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = 'Hotel name is required';
     if (!formData.description.trim() || formData.description.length < 10)
-      newErrors.description = 'Description must be at least 10 characters long'
-    if (!formData.category) newErrors.category = 'Select a category'
-    if (!formData.slug.trim()) newErrors.slug = 'Slug is required'
+      newErrors.description = 'Description must be at least 10 characters long';
+    if (!formData.category) newErrors.category = 'Select a category';
+    if (!formData.slug.trim()) newErrors.slug = 'Slug is required';
 
     Object.entries(formData.social_links).forEach(([key, val]) => {
       if (val && !/^https?:\/\/[^\s]+$/.test(val)) {
-        newErrors[`social_links.${key}`] = `Enter a valid ${key} URL`
+        newErrors[`social_links.${key}`] = `Enter a valid ${key} URL`;
       }
-    })
+    });
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!validateForm()) return
+    e.preventDefault();
+    if (!validateForm()) return;
 
     try {
-      const payload = { ...formData, category_id: formData.category }
-      delete payload.category
+      const payload = { ...formData, category_id: Number(formData.category) };
+      delete payload.category;
 
       if (isEdit) {
-        await updateHotel(id, payload)
-        console.log('✅ Hotel updated successfully')
+        const updatedData = { ...payload, name: null };
+        delete updatedData.retreat_id;
+        await updateHotel(id, updatedData);
+        toast.success('Hotel updated successfully!');
       } else {
-        await createHotel(payload)
-        console.log('✅ Hotel created successfully')
+        await createHotel(payload);
+        toast.success('Hotel created successfully!');
       }
 
-      navigate('/hotel')
+      setTimeout(() => navigate('/hotel'), 1500);
     } catch (error) {
-      console.error('❌ Error saving hotel:', error)
-      alert('Failed to save hotel. Check console for details.')
+      console.error('❌ Error saving hotel:', error);
+      toast.error('Failed to save hotel. Check console for details.');
     }
-  }
+  };
 
   return (
     <div className="rounded-2xl border border-gray-800 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
@@ -105,6 +122,7 @@ const HotelForm = () => {
           </label>
           <input
             id="name"
+            readOnly={isEdit}
             name="name"
             value={formData.name}
             onChange={handleInputChange}
@@ -190,8 +208,8 @@ const HotelForm = () => {
                   onChange={handleInputChange}
                   placeholder={`https://${platform}.com/...`}
                   className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors[`social_links.${platform}`]
-                      ? 'border-red-500 ring-red-400'
-                      : 'border-gray-700 focus:ring-blue-500'
+                    ? 'border-red-500 ring-red-400'
+                    : 'border-gray-700 focus:ring-blue-500'
                     }`}
                 />
                 {errors[`social_links.${platform}`] && (
@@ -224,6 +242,8 @@ const HotelForm = () => {
     </div>
 
   )
-}
 
-export default HotelForm
+};
+
+export default HotelForm;
+

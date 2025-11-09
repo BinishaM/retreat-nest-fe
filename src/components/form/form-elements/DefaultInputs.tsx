@@ -3,8 +3,8 @@ import ComponentCard from "../../common/ComponentCard";
 import Label from "../Label";
 import Input from "../input/InputField";
 import Select from "../Select";
-import { EyeCloseIcon, EyeIcon, TimeIcon } from "../../../icons";
 import DatePicker from "../date-picker.tsx";
+import { EyeIcon, EyeOffIcon, TimerIcon } from "lucide-react";
 
 export default function DefaultInputs() {
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +51,7 @@ export default function DefaultInputs() {
               {showPassword ? (
                 <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
               ) : (
-                <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                <EyeOffIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
               )}
             </button>
           </div>
@@ -79,7 +79,7 @@ export default function DefaultInputs() {
               onChange={(e) => console.log(e.target.value)}
             />
             <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-              <TimeIcon className="size-6" />
+              <TimerIcon className="size-6" />
             </span>
           </div>
         </div>

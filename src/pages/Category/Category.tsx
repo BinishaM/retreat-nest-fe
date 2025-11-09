@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Home, User, Pencil } from 'lucide-react';
 import { Edit2, Trash2 } from 'lucide-react'
+import { deleteCategory, getCategories } from '@/api/category';
+import { toast } from 'react-toastify';
 
 // 🧩 Initial mock data (replace with API later)
 const initialCategories = [
@@ -16,6 +18,22 @@ const CategoryList = () => {
   const [categories, setCategories] = useState(initialCategories)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const hasFetched = useRef(false);
+
+  const fetchCategory = async () => {
+    try {
+      setLoading(true);
+      const data = await getCategories();
+      setCategories(data.data);
+    } catch (err) {
+      console.error("Error fetching hotels:", err);
+      setError("Failed to fetch hotel data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 🗑️ Handle Delete Click
   const handleDeleteClick = (category) => {
@@ -24,8 +42,17 @@ const CategoryList = () => {
   }
 
   // ✅ Confirm Delete
-  const handleConfirmDelete = () => {
-    setCategories(categories.filter((c) => c.id !== selectedCategory.id))
+  const handleConfirmDelete = async() => {
+    try {
+      await deleteCategory(selectedCategory.category_id)
+      toast.success('Category deleted successfully!');
+      fetchCategory();
+    } catch (err) {
+      toast.error('Failed to delete category.');
+      alert("Error deleting hotel.");
+    }
+
+    setCategories(categories.filter((c) => c.id !== selectedCategory.category_id))
     setShowDeleteModal(false)
     setSelectedCategory(null)
   }
@@ -35,6 +62,13 @@ const CategoryList = () => {
     setShowDeleteModal(false)
     setSelectedCategory(null)
   }
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchCategory();
+  }, []);
+
 
   return (
     <>
@@ -71,7 +105,7 @@ const CategoryList = () => {
                     <td className="px-4 py-2 text-gray-200 text-center space-x-2">
                       {/* Edit Button */}
                       <button
-                        onClick={() => navigate(`/category/edit/${category.id}`, { state: { category } })}
+                        onClick={() => navigate(`/category/edit/${category.category_id}`, { state: { category } })}
                         className="inline-flex items-center px-2 py-1 border border-blue-200 rounded hover:bg-gray-500"
                         title="Edit"
                       >

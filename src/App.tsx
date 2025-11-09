@@ -16,12 +16,14 @@ import Hotel from './pages/Hotel/Hotel';
 import HotelForm from './pages/Hotel/HotelForm';
 import Category from './pages/Category/Category';
 import CategoryForm from './pages/Category/CategoryForm';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   return (
     <>
       <Router>
+         <ToastContainer position="bottom-right" autoClose={3000} />
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}

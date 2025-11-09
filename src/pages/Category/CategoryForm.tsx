@@ -1,5 +1,9 @@
+import { createCategory, updateCategory } from '@/api/category'
 import React, { useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const CategoryForm = () => {
   const navigate = useNavigate()
@@ -32,18 +36,26 @@ const CategoryForm = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!validateForm()) return
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    if (isEdit) {
-      console.log('Updating category:', formData)
-    } else {
-      console.log('Adding new category:', formData)
+    try {
+      if (isEdit) {
+        await updateCategory(id, formData);
+        toast.success('Category updated successfully!');
+      } else {
+        await createCategory(formData);
+        toast.success('Category created successfully!');
+      }
+
+      setTimeout(() => navigate('/category'), 1500);
+
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong. Please try again.');
     }
-
-    navigate('/category')
-  }
+  };
 
   return (
     <div className="rounded-2xl border border-gray-800 bg-white dark:bg-white/[0.03] shadow-sm p-6">
@@ -61,10 +73,10 @@ const CategoryForm = () => {
             id="name"
             name="name"
             value={formData.name}
+            readOnly={isEdit}
             onChange={handleInputChange}
-            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${
-              errors.name ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
-            }`}
+            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.name ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
+              }`}
           />
           {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
         </div>
@@ -80,9 +92,8 @@ const CategoryForm = () => {
             rows={3}
             value={formData.description}
             onChange={handleInputChange}
-            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${
-              errors.description ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
-            }`}
+            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.description ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
+              }`}
           />
           {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
         </div>
