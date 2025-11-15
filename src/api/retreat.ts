@@ -8,7 +8,7 @@ export const getHotels = async () => {
     return response.data
 }
 
-// Create a new hotel
+// Create a new retreat
 export const createHotel = async (hotelData) => {
     const response = await axios.post(`${API_BASE_URL}/retreats/`, hotelData)
 
@@ -27,7 +27,7 @@ export const updateHotel = async (id, hotelData) => {
 
 
 
-// Delete a hotel
+// Delete a retreat
 export const deleteHotel = async (id) => {
     const response = await axios.delete(`${API_BASE_URL}/retreats/${id}/`)
     return response.data

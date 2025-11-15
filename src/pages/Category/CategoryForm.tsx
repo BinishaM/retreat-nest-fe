@@ -1,4 +1,5 @@
 import { createCategory, updateCategory } from '@/api/category'
+import ComponentWrapper from '@/common/ComponentWrapper';
 import React, { useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify';
@@ -58,7 +59,8 @@ const CategoryForm = () => {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-800 bg-white dark:bg-white/[0.03] shadow-sm p-6">
+    <ComponentWrapper>
+
       <h2 className="text-lg font-semibold text-gray-200 mb-6">
         {isEdit ? 'Edit Category' : 'Add New Category'}
       </h2>
@@ -115,7 +117,8 @@ const CategoryForm = () => {
           </button>
         </div>
       </form>
-    </div>
+    </ComponentWrapper>
+
   )
 }
 

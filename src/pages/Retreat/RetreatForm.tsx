@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { createHotel, updateHotel } from '../../api/hotel';
+import { createHotel, updateHotel } from '../../api/retreat';
 import { getCategories } from '../../api/category'; // <-- API call
 import { toast } from 'react-toastify';
+import ComponentWrapper from '@/common/ComponentWrapper';
 
 const HotelForm = () => {
   const location = useLocation();
-  const hotel = location.state?.hotel;
+  const retreat = location.state?.retreat;
   const categoryOptions = location.state?.categories;
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
-    ...hotel,
-    name: hotel?.name || '',
-    description: hotel?.description || '',
-    category: hotel?.category_id || '',
-    slug: hotel?.slug || '',
-    social_links: hotel?.social_links || {
+    ...retreat,
+    name: retreat?.name || '',
+    description: retreat?.description || '',
+    category: retreat?.category_id || '',
+    slug: retreat?.slug || '',
+    social_links: retreat?.social_links || {
       facebook: '',
       instagram: '',
       twitter: '',
@@ -67,7 +67,7 @@ const HotelForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Hotel name is required';
+    if (!formData.name.trim()) newErrors.name = 'Retreat name is required';
     if (!formData.description.trim() || formData.description.length < 10)
       newErrors.description = 'Description must be at least 10 characters long';
     if (!formData.category) newErrors.category = 'Select a category';
@@ -95,30 +95,44 @@ const HotelForm = () => {
         const updatedData = { ...payload, name: null };
         delete updatedData.retreat_id;
         await updateHotel(id, updatedData);
-        toast.success('Hotel updated successfully!');
+        toast.success('Retreat updated successfully!');
       } else {
         await createHotel(payload);
-        toast.success('Hotel created successfully!');
+        toast.success('Retreat created successfully!');
       }
 
-      setTimeout(() => navigate('/hotel'), 1500);
+      setTimeout(() => navigate('/retreat'), 1500);
     } catch (error) {
-      console.error('❌ Error saving hotel:', error);
-      toast.error('Failed to save hotel. Check console for details.');
+      console.error('❌ Error saving retreat:', error);
+      toast.error('Failed to save retreat. Check console for details.');
     }
   };
 
   return (
-    <div className="rounded-2xl border border-gray-800 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-      <h2 className="text-lg font-semibold text-gray-200 mb-6">
-        {isEdit ? 'Edit Hotel' : 'Add New Hotel'}
-      </h2>
+    <ComponentWrapper>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <h2 className="text-lg font-semibold text-gray-200 mb-6">
+          {isEdit ? 'Edit Retreat' : 'Add New Retreat'}
+        </h2>
+        {isEdit && <button
+          type="submit"
+          onClick={() =>
+            navigate(`/gallery/`, {
+              state: { retreat: retreat },
+            })
+          }
+
+          className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          + Manage Gallery
+        </button>}
+      </div>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        {/* Hotel Name */}
+        {/* Retreat Name */}
         <div>
           <label htmlFor="name" className="block font-medium text-gray-200 mb-1">
-            Hotel Name
+            Retreat Name
           </label>
           <input
             id="name"
@@ -161,7 +175,7 @@ const HotelForm = () => {
               name="slug"
               value={formData.slug}
               onChange={handleInputChange}
-              placeholder="e.g., grand-palace-hotel"
+              placeholder="e.g., grand-palace-retreat"
               className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.slug ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
                 }`}
             />
@@ -182,7 +196,7 @@ const HotelForm = () => {
                 }`}
             >
               <option value="">Select a category</option>
-              {categoryOptions.map((cat) => (
+              {categoryOptions?.map((cat) => (
                 <option key={cat.value} value={cat.value}>
                   {cat.label}
                 </option>
@@ -226,7 +240,7 @@ const HotelForm = () => {
         <div className="flex justify-end space-x-3 pt-4">
           <button
             type="button"
-            onClick={() => navigate('/hotel')}
+            onClick={() => navigate('/retreat')}
             className="px-4 py-2 border border-gray-700 rounded-md text-gray-200 hover:bg-gray-800"
           >
             Cancel
@@ -239,8 +253,7 @@ const HotelForm = () => {
           </button>
         </div>
       </form>
-    </div>
-
+    </ComponentWrapper>
   )
 
 };

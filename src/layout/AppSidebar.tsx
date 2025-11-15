@@ -30,13 +30,18 @@ const navItems: NavItem[] = [
   },
    {
     icon: <UserCircleIcon />,
-    name: "Hotel",
-    path: "/hotel",
+    name: "Retreat",
+    path: "/retreat",
   },
   {
     icon: <GridIcon />,
     name: "Category",
     path: "/category",
+  },
+  {
+    icon: <GridIcon />,
+    name: "Gallery Category",
+    path: "/gallery-category",
   },
   
 ];

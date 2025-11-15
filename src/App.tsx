@@ -12,55 +12,73 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import Hotel from './pages/Hotel/Hotel';
-import HotelForm from './pages/Hotel/HotelForm';
+import Retreat from './pages/Retreat/Retreat';
+import HotelForm from './pages/Retreat/RetreatForm';
 import Category from './pages/Category/Category';
 import CategoryForm from './pages/Category/CategoryForm';
+import GalleryCategory from './pages/GalleryCategory/GalleryCategory';
+import GalleryCategoryForm from "./pages/GalleryCategory/GalleryCategoryForm";
+import Gallery from "./pages/Gallery/Gallery";
+import GalleryForm from './pages/Gallery/GalleryForm';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoginForm from "./auth/Login";
 
 export default function App() {
   return (
     <>
       <Router>
-         <ToastContainer position="bottom-right" autoClose={3000} />
+        <ToastContainer position="bottom-right" autoClose={3000} />
         <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
 
-            {/* Others Page */}
+        <Routes>
+
+          {/* ---------------- AUTH ROUTES (NO SIDEBAR) ---------------- */}
+          <Route path="/" element={<LoginForm />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+
+
+          {/* ---------------- DASHBOARD ROUTES (WITH SIDEBAR) ---------------- */}
+          <Route element={<AppLayout />}>
+
+            <Route path="/dashboard" element={<Home />} />
+
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
-
 
             {/* Charts */}
             <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} />
 
-            <Route path="/hotel" element={<Hotel />} />
-            <Route path="/hotel/new" element={<HotelForm />} />
-            <Route path="hotel/edit/:id" element={<HotelForm />} />
+            {/* Retreat */}
+            <Route path="/retreat" element={<Retreat />} />
+            <Route path="/retreat/new" element={<HotelForm />} />
+            <Route path="/retreat/edit/:id" element={<HotelForm />} />
 
-
+            {/* Category */}
             <Route path="/category" element={<Category />} />
             <Route path="/category/new" element={<CategoryForm />} />
-            <Route path="category/edit/:id" element={<CategoryForm />} />
+            <Route path="/category/edit/:id" element={<CategoryForm />} />
 
+            {/* Gallery Category */}
+            <Route path="/gallery-category" element={<GalleryCategory />} />
+            <Route path="/gallery-category/new" element={<GalleryCategoryForm />} />
+            <Route path="/gallery-category/edit/:id" element={<GalleryCategoryForm />} />
 
+            {/* Galleries */}
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/gallery/new" element={<GalleryForm />} />
+            <Route path="/gallery/edit/:id" element={<GalleryForm />} />
 
           </Route>
 
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-
-          {/* Fallback Route */}
+          {/* Fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </>
   );
 }
+
