@@ -21,7 +21,7 @@ const GalleryCategoryForm = () => {
 
   const [errors, setErrors] = useState({});
 
-  // ✅ Fetch existing category if editing (when not passed via state)
+  // Fetch existing category if editing (when not passed via state)
   useEffect(() => {
     const fetchCategory = async () => {
       if (!isEdit || existingCategory) return;
@@ -38,7 +38,7 @@ const GalleryCategoryForm = () => {
     fetchCategory();
   }, [id, isEdit, existingCategory]);
 
-  // ✅ Handle input
+  // Handle input
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -47,7 +47,7 @@ const GalleryCategoryForm = () => {
     }));
   };
 
-  // ✅ Validate form before submission
+  // Validate form before submission
   const validateForm = () => {
     const newErrors: any = {};
     if (!formData.name.trim()) newErrors.name = "Name is required.";
@@ -55,7 +55,7 @@ const GalleryCategoryForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ Submit handler
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -77,14 +77,14 @@ const GalleryCategoryForm = () => {
 
   return (
     <ComponentWrapper>
-      <h2 className="text-lg font-semibold text-gray-200 mb-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
         {isEdit ? "Edit Gallery Category" : "Add New Gallery Category"}
       </h2>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {/* Name */}
         <div>
-          <label htmlFor="name" className="block font-medium text-gray-200 mb-1">
+          <label htmlFor="name" className="block font-medium text-gray-900 dark:text-gray-200 mb-1">
             Category Name
           </label>
           <input
@@ -93,9 +93,9 @@ const GalleryCategoryForm = () => {
             value={formData.name}
             onChange={handleChange}
             placeholder="e.g., Beach Retreats"
-            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.name
+            className={`w-full rounded-md border px-3 py-2 text-gray-900 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 ${errors.name
               ? "border-red-500 ring-red-400"
-              : "border-gray-700 focus:ring-blue-500"
+              : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
               }`}
           />
           {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
@@ -106,20 +106,19 @@ const GalleryCategoryForm = () => {
           <button
             type="button"
             onClick={() => navigate("/gallery-category")}
-            className="px-4 py-2 border border-gray-700 rounded-md text-gray-200 hover:bg-gray-800"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
           >
             {isEdit ? "Update" : "Save"}
           </button>
         </div>
       </form>
     </ComponentWrapper>
-
   );
 };
 

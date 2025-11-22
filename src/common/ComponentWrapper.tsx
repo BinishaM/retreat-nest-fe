@@ -7,7 +7,7 @@ const ComponentWrapper = ({ children }: { children: any }) => {
     return (
         <>
             <PageBreadcrumb />
-            <div className="rounded-2xl border border-gray-800 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
                 {children}
             </div>
         </>

@@ -8,7 +8,7 @@ export const getGalleries = async (retreat_id: number | string) => {
 };
 
 // Create a new gallery item (with image)
-export const createGallery = async (retreat_id: number | string,formData: FormData) => {
+export const createGallery = async (retreat_id: number | string, formData: FormData) => {
   const response = await axios.post(`${API_BASE_URL}/retreats/${retreat_id}/galleries/`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -18,7 +18,7 @@ export const createGallery = async (retreat_id: number | string,formData: FormDa
 };
 
 // Update a gallery item (supports formData)
-export const updateGallery = async (retreat_id: number | string,id: number | string, formData: FormData) => {
+export const updateGallery = async (retreat_id: number | string, id: number | string, formData: FormData) => {
   const response = await axios.patch(`${API_BASE_URL}/retreats/${retreat_id}/galleries/${id}/`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -28,7 +28,19 @@ export const updateGallery = async (retreat_id: number | string,id: number | str
 };
 
 // Delete a gallery item
-export const deleteGallery = async (retreat_id: number | string,id: number | string) => {
+export const deleteGallery = async (retreat_id: number | string, id: number | string) => {
   const response = await axios.delete(`${API_BASE_URL}/retreats/${retreat_id}/galleries/${id}/`);
   return response.data;
 };
+
+
+// Get gallery image
+export const getGalleryImage = async (retreat_id: number | string, id: string) => {
+  return axios.get(
+    `${API_BASE_URL}/retreats/${retreat_id}/galleries/${id}/image/`,
+    {
+      responseType: "arraybuffer",
+    }
+  );
+};
+

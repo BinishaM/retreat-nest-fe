@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { createHotel, updateHotel } from '../../api/retreat';
-import { getCategories } from '../../api/category'; // <-- API call
+import { getCategories } from '../../api/category';
 import { toast } from 'react-toastify';
 import ComponentWrapper from '@/common/ComponentWrapper';
 
@@ -11,6 +11,9 @@ const HotelForm = () => {
   const categoryOptions = location.state?.categories;
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const isEdit = Boolean(id);
+
   const [formData, setFormData] = useState({
     ...retreat,
     name: retreat?.name || '',
@@ -25,32 +28,29 @@ const HotelForm = () => {
     },
   });
 
-  const [categories, setCategories] = useState([]); // fetched categories
+  const [categories, setCategories] = useState([]);
   const [errors, setErrors] = useState({});
-  const isEdit = Boolean(id);
 
-  // ✅ Fetch categories from API
+  // Fetch categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await getCategories();
-        // Map API data to { value, label } format for select
         const options = res.data.map((cat) => ({
           value: cat.id,
           label: cat.name,
         }));
         setCategories(options);
       } catch (err) {
-        console.error('Failed to fetch categories:', err);
         toast.error('Could not load categories');
       }
     };
-
     fetchCategories();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     if (name.startsWith('social_links.')) {
       const key = name.split('.')[1];
       setFormData({
@@ -61,15 +61,20 @@ const HotelForm = () => {
         },
       });
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
+
     if (!formData.name.trim()) newErrors.name = 'Retreat name is required';
     if (!formData.description.trim() || formData.description.length < 10)
       newErrors.description = 'Description must be at least 10 characters long';
+
     if (!formData.category) newErrors.category = 'Select a category';
     if (!formData.slug.trim()) newErrors.slug = 'Slug is required';
 
@@ -101,46 +106,55 @@ const HotelForm = () => {
         toast.success('Retreat created successfully!');
       }
 
-      setTimeout(() => navigate('/retreat'), 1500);
-    } catch (error) {
-      console.error('❌ Error saving retreat:', error);
-      toast.error('Failed to save retreat. Check console for details.');
+      setTimeout(() => navigate('/retreat'), 1200);
+    } catch (err) {
+      toast.error('Failed to save retreat');
     }
   };
 
   return (
     <ComponentWrapper>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <h2 className="text-lg font-semibold text-gray-200 mb-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           {isEdit ? 'Edit Retreat' : 'Add New Retreat'}
         </h2>
-        {isEdit && <button
-          type="submit"
-          onClick={() =>
-            navigate(`/gallery/`, {
-              state: { retreat: retreat },
-            })
-          }
 
-          className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          + Manage Gallery
-        </button>}
+        {isEdit && (
+          <button
+            type="button"
+            onClick={() =>
+              navigate(`/gallery/`, {
+                state: { retreat },
+              })
+            }
+            className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            + Manage Gallery
+          </button>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        {/* Retreat Name */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Name */}
         <div>
-          <label htmlFor="name" className="block font-medium text-gray-200 mb-1">
+          <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">
             Retreat Name
           </label>
           <input
             id="name"
-            readOnly={isEdit}
             name="name"
+            readOnly={isEdit}
             value={formData.name}
             onChange={handleInputChange}
-            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.name ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
+            className={`w-full rounded-md border px-3 py-2
+              bg-white text-gray-900 
+              dark:bg-gray-800 dark:text-gray-100
+              focus:outline-none focus:ring-2
+              ${
+                errors.name
+                  ? 'border-red-500 ring-red-400'
+                  : 'border-gray-300 dark:border-gray-700 focus:ring-blue-500'
               }`}
           />
           {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
@@ -148,7 +162,7 @@ const HotelForm = () => {
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block font-medium text-gray-200 mb-1">
+          <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">
             Description
           </label>
           <textarea
@@ -157,17 +171,26 @@ const HotelForm = () => {
             rows={3}
             value={formData.description}
             onChange={handleInputChange}
-            className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.description ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
+            className={`w-full rounded-md border px-3 py-2
+              bg-white text-gray-900
+              dark:bg-gray-800 dark:text-gray-100
+              focus:outline-none focus:ring-2
+              ${
+                errors.description
+                  ? 'border-red-500 ring-red-400'
+                  : 'border-gray-300 dark:border-gray-700 focus:ring-blue-500'
               }`}
           />
-          {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
+          {errors.description && (
+            <p className="text-sm text-red-500 mt-1">{errors.description}</p>
+          )}
         </div>
 
-        {/* Slug & Category Row */}
+        {/* Slug + Category */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Slug */}
           <div>
-            <label htmlFor="slug" className="block font-medium text-gray-200 mb-1">
+            <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">
               Slug
             </label>
             <input
@@ -175,8 +198,15 @@ const HotelForm = () => {
               name="slug"
               value={formData.slug}
               onChange={handleInputChange}
-              placeholder="e.g., grand-palace-retreat"
-              className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.slug ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
+              placeholder="e.g., mountain-view-retreat"
+              className={`w-full rounded-md border px-3 py-2
+                bg-white text-gray-900
+                dark:bg-gray-800 dark:text-gray-100
+                focus:outline-none focus:ring-2
+                ${
+                  errors.slug
+                    ? 'border-red-500 ring-red-400'
+                    : 'border-gray-300 dark:border-gray-700 focus:ring-blue-500'
                 }`}
             />
             {errors.slug && <p className="text-sm text-red-500 mt-1">{errors.slug}</p>}
@@ -184,7 +214,7 @@ const HotelForm = () => {
 
           {/* Category */}
           <div>
-            <label htmlFor="category" className="block font-medium text-gray-200 mb-1">
+            <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">
               Category
             </label>
             <select
@@ -192,7 +222,14 @@ const HotelForm = () => {
               name="category"
               value={formData.category}
               onChange={handleInputChange}
-              className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors.category ? 'border-red-500 ring-red-400' : 'border-gray-700 focus:ring-blue-500'
+              className={`w-full rounded-md border px-3 py-2
+                bg-white text-gray-900
+                dark:bg-gray-800 dark:text-gray-100
+                focus:outline-none focus:ring-2
+                ${
+                  errors.category
+                    ? 'border-red-500 ring-red-400'
+                    : 'border-gray-300 dark:border-gray-700 focus:ring-blue-500'
                 }`}
             >
               <option value="">Select a category</option>
@@ -202,17 +239,22 @@ const HotelForm = () => {
                 </option>
               ))}
             </select>
-            {errors.category && <p className="text-sm text-red-500 mt-1">{errors.category}</p>}
+            {errors.category && (
+              <p className="text-sm text-red-500 mt-1">{errors.category}</p>
+            )}
           </div>
         </div>
 
-        {/* Social Media Links */}
+        {/* Social Links */}
         <div>
-          <h3 className="text-md font-semibold text-gray-200 mb-3">Social Media Links</h3>
+          <h3 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            Social Media Links
+          </h3>
+
           <div className="grid md:grid-cols-2 gap-6">
             {['facebook', 'instagram', 'twitter', 'website'].map((platform) => (
               <div key={platform}>
-                <label htmlFor={platform} className="block font-medium text-gray-200 mb-1 capitalize">
+                <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1 capitalize">
                   {platform}
                 </label>
                 <input
@@ -221,9 +263,14 @@ const HotelForm = () => {
                   value={formData.social_links[platform]}
                   onChange={handleInputChange}
                   placeholder={`https://${platform}.com/...`}
-                  className={`w-full rounded-md border px-3 py-2 text-gray-200 bg-white dark:bg-white/[0.05] focus:outline-none focus:ring-2 ${errors[`social_links.${platform}`]
-                    ? 'border-red-500 ring-red-400'
-                    : 'border-gray-700 focus:ring-blue-500'
+                  className={`w-full rounded-md border px-3 py-2
+                    bg-white text-gray-900
+                    dark:bg-gray-800 dark:text-gray-100
+                    focus:outline-none focus:ring-2
+                    ${
+                      errors[`social_links.${platform}`]
+                        ? 'border-red-500 ring-red-400'
+                        : 'border-gray-300 dark:border-gray-700 focus:ring-blue-500'
                     }`}
                 />
                 {errors[`social_links.${platform}`] && (
@@ -241,10 +288,13 @@ const HotelForm = () => {
           <button
             type="button"
             onClick={() => navigate('/retreat')}
-            className="px-4 py-2 border border-gray-700 rounded-md text-gray-200 hover:bg-gray-800"
+            className="px-4 py-2 border border-gray-400 text-gray-700 bg-gray-100
+                       hover:bg-gray-200 rounded-md
+                       dark:border-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
+
           <button
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -254,9 +304,7 @@ const HotelForm = () => {
         </div>
       </form>
     </ComponentWrapper>
-  )
-
+  );
 };
 
 export default HotelForm;
-
