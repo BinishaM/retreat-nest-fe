@@ -20,26 +20,42 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import ComponentWrapper from "@/common/ComponentWrapper";
-import { deleteGallery, getGalleries } from "@/api/gallery";
+import { deleteGallery, getGalleries, getGalleryImage } from "@/api/gallery";
 import { getGalleryCategories } from "@/api/galleryCategory";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const GalleryList = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const retreat = location.state?.retreat;
     const retreat_id = retreat.retreat_id;
-    const [categories, setCategories] = useState([]);
+
+    const [categories, setCategories] = useState<any[]>([]);
+    const [galleryCategory, setGalleryCategory] = useState<any[]>([]);
+    const [galleryImages, setGalleryImages] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<any>(null);
-    const [galleryCategory, setGalleryCategory] = useState([]);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const hasFetched = useRef(false);
 
+    // Fetch gallery categories for label display
     const fetchGalleryCategories = async () => {
         try {
             const res = await getGalleryCategories();
-            const options = res.data.map(cat => ({
+            const options = res.data.map((cat: any) => ({
                 value: cat.gallery_category_id,
                 label: cat.name,
             }));
@@ -53,6 +69,7 @@ const GalleryList = () => {
         fetchGalleryCategories();
     }, []);
 
+    // Fetch galleries
     const fetchCategories = async () => {
         try {
             setLoading(true);
@@ -72,6 +89,52 @@ const GalleryList = () => {
         fetchCategories();
     }, []);
 
+    // Pagination calculation
+    const indexOfLast = currentPage * itemsPerPage;
+    const indexOfFirst = indexOfLast - itemsPerPage;
+    const currentItems = categories.slice(indexOfFirst, indexOfLast);
+    const totalPages = Math.ceil(categories.length / itemsPerPage);
+
+    // Convert arraybuffer to base64 (browser-friendly)
+    const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+        let binary = "";
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    };
+
+    useEffect(() => {
+        const fetchImagesForPage = async () => {
+            if (categories.length === 0) return;
+
+            const indexOfLast = currentPage * itemsPerPage;
+            const indexOfFirst = indexOfLast - itemsPerPage;
+            const currentItems = categories.slice(indexOfFirst, indexOfLast);
+
+            const images: Record<string, string> = {};
+            for (const gallery of currentItems) {
+                try {
+                    const res = await getGalleryImage(retreat_id, gallery.gallery_id);
+                    const base64 = arrayBufferToBase64(res.data);
+                    const mimeType = res.headers["content-type"];
+                    images[gallery.gallery_id] = `data:${mimeType};base64,${base64}`;
+                } catch (err) {
+                    console.error(`Failed to fetch image for gallery ${gallery.gallery_id}`, err);
+                }
+            }
+
+            setGalleryImages(images);
+        };
+
+        fetchImagesForPage();
+    }, [currentPage, categories]); 
+
+
+
+    // Delete handlers
     const handleDeleteClick = (category: any) => {
         setSelectedCategory(category);
         setShowDeleteModal(true);
@@ -82,7 +145,9 @@ const GalleryList = () => {
             await deleteGallery(retreat_id, selectedCategory.gallery_id);
             toast.success("Category deleted successfully!");
             fetchCategories();
-            setCategories(prev => prev.filter(c => c.id !== selectedCategory.gallery_id));
+            setCategories((prev) =>
+                prev.filter((c) => c.id !== selectedCategory.gallery_id)
+            );
         } catch (err) {
             toast.error("Failed to delete category.");
         } finally {
@@ -91,9 +156,10 @@ const GalleryList = () => {
         }
     };
 
+    // Get category label
     const getCategoryLabel = (categoryId: number | undefined) => {
         if (categoryId == null) return "-";
-        const category = galleryCategory.find(option => option.value === categoryId);
+        const category = galleryCategory.find((option) => option.value === categoryId);
         return category ? category.label : "-";
     };
 
@@ -116,7 +182,7 @@ const GalleryList = () => {
                 <Button
                     onClick={() =>
                         navigate(`/gallery/new`, {
-                            state: { retreat: retreat },
+                            state: { retreat },
                         })
                     }
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
@@ -139,24 +205,28 @@ const GalleryList = () => {
                     </TableHeader>
 
                     <TableBody>
-                        {categories.length > 0 ? (
-                            categories.map((cat: any, index: number) => (
+                        {currentItems.length > 0 ? (
+                            currentItems.map((cat: any, index: number) => (
                                 <TableRow
                                     key={cat.id}
-                                    className="
-                                            hover:bg-gray-100 
-                                            dark:hover:bg-gray-800 
-                                            transition-colors
-                                        "
+                                    className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                 >
                                     <TableCell className="text-gray-700 dark:text-gray-300">
-                                        {index + 1}
+                                        {indexOfFirst + index + 1}
                                     </TableCell>
                                     <TableCell className="text-gray-900 dark:text-white font-medium">
                                         {cat.caption}
                                     </TableCell>
                                     <TableCell className="text-gray-700 dark:text-gray-400">
-                                        {cat.slug}
+                                        {galleryImages[cat.gallery_id] ? (
+                                            <img
+                                                src={galleryImages[cat.gallery_id]}
+                                                alt={cat.caption}
+                                                className="h-16 w-16 object-cover rounded"
+                                            />
+                                        ) : (
+                                            <span>Loading...</span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-gray-700 dark:text-gray-400">
                                         {getCategoryLabel(cat.gallery_category_id)}
@@ -165,10 +235,7 @@ const GalleryList = () => {
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            className="
-                                                    border-gray-300 text-gray-700 hover:bg-gray-200
-                                                    dark:border-gray-500 dark:text-white dark:hover:bg-gray-700
-                                                "
+                                            className="border-gray-300 text-gray-700 hover:bg-gray-200 dark:border-gray-500 dark:text-white dark:hover:bg-gray-700"
                                             onClick={() =>
                                                 navigate(`/gallery/edit/${cat.gallery_id}`, {
                                                     state: { retreat, gallery: cat },
@@ -203,6 +270,42 @@ const GalleryList = () => {
                 </Table>
             </div>
 
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <Pagination className="mt-6 flex justify-center">
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious
+                                onClick={() => currentPage > 1 && setCurrentPage((p) => p - 1)}
+                                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                            />
+                        </PaginationItem>
+
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <PaginationItem key={i}>
+                                <PaginationLink
+                                    isActive={currentPage === i + 1}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                >
+                                    {i + 1}
+                                </PaginationLink>
+                            </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                            <PaginationNext
+                                onClick={() =>
+                                    currentPage < totalPages && setCurrentPage((p) => p + 1)
+                                }
+                                className={
+                                    currentPage === totalPages ? "pointer-events-none opacity-50" : ""
+                                }
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            )}
+
             {/* Delete Modal */}
             <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
                 <DialogContent className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200">
@@ -220,10 +323,7 @@ const GalleryList = () => {
                         <Button
                             variant="outline"
                             onClick={() => setShowDeleteModal(false)}
-                            className="
-                                    border-gray-400 text-gray-700 hover:bg-gray-200
-                                    dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800
-                                "
+                            className="border-gray-400 text-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
                             Cancel
                         </Button>

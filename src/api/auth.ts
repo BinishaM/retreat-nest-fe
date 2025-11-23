@@ -9,3 +9,8 @@ export const loginUser = async (formData: FormData) => {
     );
     return response.data;
 };
+
+export const refetchToken = async () => {
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh/`);
+    return response.data;
+};

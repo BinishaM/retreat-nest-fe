@@ -103,8 +103,8 @@ const GalleryCategoryList = () => {
             <TableRow className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200">
               <TableHead className="w-[60px]">#</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Description</TableHead>
+              {/* <TableHead>Slug</TableHead>
+              <TableHead>Description</TableHead> */}
               <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -119,10 +119,10 @@ const GalleryCategoryList = () => {
                   <TableCell className="font-medium text-gray-900 dark:text-white">
                     {cat.name}
                   </TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-400">{cat.slug}</TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-400">
+                  {/* <TableCell className="text-gray-600 dark:text-gray-400">{cat.slug}</TableCell> */}
+                  {/* <TableCell className="text-gray-600 dark:text-gray-400">
                     {cat.description || "-"}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="text-center space-x-2">
                     <Button
                       variant="outline"
