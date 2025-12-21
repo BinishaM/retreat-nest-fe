@@ -8,6 +8,16 @@ export const getCategories = async () => {
   return response.data;
 };
 
+// export const getCategories = async (pageNumber = 1, pageSize = 10) => {
+//   const response = await axios.get(`${API_BASE_URL}/categories/`, {
+//     params: {
+//       page: pageNumber,
+//       page_size: pageSize,
+//     },
+//   });
+//   return response.data;
+// };
+
 // Get a single category by ID
 export const getCategory = async (id: number | string) => {
   const response = await axios.get(`${API_BASE_URL}/categories/${id}/`);

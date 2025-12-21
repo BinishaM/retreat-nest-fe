@@ -3,11 +3,15 @@ import axios from './axiosClient';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
-// Get all hotels
-export const getHotels = async () => {
-    const response = await axios.get(`${API_BASE_URL}/retreats/`)
-    return response.data
-}
+export const getHotels = async (pageNumber = 1, pageSize = 10) => {
+  const response = await axios.get(`${API_BASE_URL}/retreats/`, {
+    params: {
+      page: pageNumber,
+      page_size: pageSize,
+    },
+  });
+  return response.data;
+};
 
 // Create a new retreat
 export const createHotel = async (hotelData) => {

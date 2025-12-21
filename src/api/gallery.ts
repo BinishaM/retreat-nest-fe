@@ -2,8 +2,18 @@ import axios from './axiosClient';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Get all gallery items
-export const getGalleries = async (retreat_id: number | string) => {
-  const response = await axios.get(`${API_BASE_URL}/retreats/${retreat_id}/galleries/`);
+// export const getGalleries = async (retreat_id: number | string) => {
+//   const response = await axios.get(`${API_BASE_URL}/retreats/${retreat_id}/galleries/`);
+//   return response.data;
+// };
+
+export const getGalleries = async (retreat_id: number | string, pageNumber = 1, pageSize = 10) => {
+  const response = await axios.get(`${API_BASE_URL}/retreats/${retreat_id}/galleries/`, {
+    params: {
+      page: pageNumber,
+      page_size: pageSize,
+    },
+  });
   return response.data;
 };
 

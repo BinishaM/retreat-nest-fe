@@ -22,6 +22,14 @@ import {
 import { toast } from "react-toastify";
 import { getCategories } from "@/api/category";
 import ComponentWrapper from "@/common/ComponentWrapper";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const HotelList = () => {
   const navigate = useNavigate();
@@ -30,6 +38,10 @@ const HotelList = () => {
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
   const hasFetched = useRef(false);
 
   const [categories, setCategories] = useState([]);
@@ -56,8 +68,10 @@ const HotelList = () => {
   const fetchHotels = async () => {
     try {
       setLoading(true);
-      const data = await getHotels();
+      const data = await getHotels( pageNumber, pageSize);
+      console.log(data)
       setHotels(data.data);
+      setTotalPages(data.meta.total_pages)
     } catch (err) {
       setError("Failed to fetch retreat data.");
     } finally {
@@ -66,10 +80,14 @@ const HotelList = () => {
   };
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-    fetchHotels();
-  }, []);
+  fetchHotels();
+}, [pageNumber, pageSize]);
+
+  // useEffect(() => {
+  //   if (hasFetched.current) return;
+  //   hasFetched.current = true;
+  //   fetchHotels();
+  // }, []);
 
   const handleDeleteClick = (retreat) => {
     setSelectedHotel(retreat);
@@ -205,6 +223,51 @@ const HotelList = () => {
           </TableBody>
         </Table>
       </div>
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Previous */}
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPageNumber((p) => Math.max(p - 1, 1))}
+                  className={pageNumber === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+
+              {/* Page numbers */}
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                return (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={page === pageNumber}
+                      onClick={() => setPageNumber(page)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              {/* Next */}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setPageNumber((p) => Math.min(p + 1, totalPages))
+                  }
+                  className={
+                    pageNumber === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
 
       {/* Delete Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>

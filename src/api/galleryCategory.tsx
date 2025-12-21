@@ -3,8 +3,18 @@ import axios from './axiosClient';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Get all categories
-export const getGalleryCategories = async () => {
-  const response = await axios.get(`${API_BASE_URL}/gallery-categories/`);
+// export const getGalleryCategories = async () => {
+//   const response = await axios.get(`${API_BASE_URL}/gallery-categories/`);
+//   return response.data;
+// };
+
+export const getGalleryCategories = async (pageNumber = 1, pageSize = 10) => {
+  const response = await axios.get(`${API_BASE_URL}/gallery-categories/`, {
+    params: {
+      page: pageNumber,
+      page_size: pageSize,
+    },
+  });
   return response.data;
 };
 
